@@ -2,29 +2,29 @@
 
 ## Problem und Ziel
 
-Mamp / Lamp Entwicklugnsumgebung war nicht mehr flexibel genug. Gerade bei der Entwicklung mit verschiedenen PHP Versionen kam es immer wieder zu Problemen
+Mamp / Lamp Entwicklungsumgebung war nicht mehr flexibel genug. Gerade bei der Entwicklung mit verschiedenen PHP Versionen kam es immer wieder zu Problemen.
 
-**Ziel:** flexible lokale Entwicklungsumgebung, die je nach Projekt dessen technische Anforderungen erfüllt
+**Ziel:** flexible lokale Entwicklungsumgebung, die je nach Projekt dessen Anforderungen erfüllt.
 
 ## Anforderungen
 
-- **Microservice Architektur** soll möglich sein 
 - **einfaches "hochfahren"**: Entwicklungsumgebungen sollten schnell verfügbar sein
-- **vhosts** "dev.website.de" muss auch weiterhin funktionieren (Lizenzen etc.)
-- **SSL-Zertifikate** müssen funktionieren. Z.B. für Entwicklung und Tests von Payment Schnittstellen
+- **vhosts**: "dev.website.de" muss auch weiterhin funktionieren (Lizenzen etc.)
+- **SSL-Zertifikate**: Z.B. für Entwicklung und Tests von Payment Schnittstellen
 - **schnelle Einrichtung**: die Einrichtung neuer Projekte muss schnell gehen
-- **Performance**: Ladezeiten müssen im Rahmen bleiben
+- **Microservice Architektur** soll möglich sein 
+- **Performance**: Ladezeiten sollen im Rahmen bleiben
 - **dev = stage = live**: Die Entwicklungsumgebung soll mit der gleichen Struktur laufen, wie auch die Liveumgebung
 
 ## Umsetzung
 
-### Microservice Architektur
-
-**Docker** ist darauf ausgelegt, die verschiedenen Komponenten einer Applikation in einzelnen Containern auszuführen. Eine Kommunikation zwischen den Containern ist einfach möglich.
-
 ### einfaches hochfahren
 
+Für Mac gibt es die **Docker App**. Diese kann unter [https://docs.docker.com/docker-for-mac/](https://docs.docker.com/docker-for-mac/) heruntergeladen werden.
+
 **Docker Compose** ist eine Konfigurationsdatei für Docker Container. Über die Kommandozeile können so alle Container mit Hilfe eines Befehls `docker-compose up -d` gestartet werden.
+
+Danach ist die Entwicklungsumgebung verfügbar und kann verwendet werden.
 
 ### vhosts
 
@@ -34,37 +34,29 @@ Lösung: [https://github.com/jwilder/nginx-proxy](https://github.com/jwilder/ngi
 - dieser leitet Einträge aus der Hosts Datei an entsprechende Container weiter
 - die dev URL muss in der docker-compose Datei des Projektes eingetragen werden
 
+### Microservice Architektur
+
+**Docker** ist darauf ausgelegt, die verschiedenen Komponenten einer Applikation in einzelnen Containern auszuführen. Eine Kommunikation zwischen den Containern ist einfach möglich.
+
+### SSL-Zertifikate
+
+Lösung: [https://github.com/jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy)
+
 ### schnelle Einrichtung
 
 Die Einrichtung eines neuen Projektes beinhaltet folgende Schritte:
 
 1. **docker-compose Datei** ins Projekt kopieren und Konfigurationen vornehmen
 2. dev url in **hosts Datei** eintragen: `sudo nano /etc/hosts` eintragen
-3. **SSL Zertifikat** für lokale URL erstellen `sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout dev.url.de.key -out dev.url.de.crt`
+3. **SSL Zertifikat** für lokale URL erstellen `sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout dev.developer-camp.de.key -out dev.developer-camp.de.crt`
 4. Alle **Container hochfahren** mit Hilfe von `docker-compose up -d`
 5. Falls **Datenbank** nötig ist: Datenbank entweder über PhpMyAdmin oder über die Konsole anlegen
-
-### einfaches hochfahren
-
-Per Konsole in das Verzeichis wechseln, dann: `docker-compose up -d`
-
-### SSL-Zertifikate
-
-Lösung: [https://github.com/jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy)
-
-Hier müssen drei Elemente zusammen spielen:
-
-- der proxy muss das Zertifikats-Verzeichnis kennen
-- der Applikations-Container muss das Zertifikats-Verzeichnis kennen
-- die Apache Configs des Applikations-Containers müssen die Verzeichnisse kennen
-
-#### Wie funktioniert das Einbinden der SSL Zertifikate
-
-Dafür muss es im System einen Ordner mit den Zertifikaten geben. Auf diesen Ordner müssen sowohl der Proxy als auch die "Applikation" zugreifen. Hierfür muss der Ordner in beiden als Volume eingebunden werden.
 
 ### Performance
 
 Na ja ...
+
+Auf System-Seite kein Problem. Rechner-Ressourcen reichen ohne Probleme aus um verschiedenste Docker-Container parallel aktiv zu haben.
 
 Das Problem ist hier die Einbindung der Volumes. Die Syncronisation der Daten in die Container dauert zu lange. Hier wird aber gerade viel getan. Hoffnung: Bald wird es besser ...
 
@@ -84,7 +76,23 @@ Ist möglich, aber zur Zeit noch nicht umgesetzt.
 
 ## Links
 
-### Docker Performance in der Zukunft
+### Docker Images
+
+Vorsicht: nicht einfach für Live-Systeme verwenden!
+
+#### Nginx-Proxy mit SSL Unterstürtzung
+
+- [https://gitlab.com/rofthedeep/docker-proxy-ssl](https://gitlab.com/rofthedeep/docker-proxy-ssl)
+
+#### PHP
+
+- [https://gitlab.com/rofthedeep/docker-php](https://gitlab.com/rofthedeep/docker-php)
+
+#### Shopware & Magento
+
+- [https://gitlab.com/rofthedeep/docker-shopware](https://gitlab.com/rofthedeep/docker-shopware) 
+
+### Docker Performance
 
 - [http://markshust.com/2017/03/02/making-docker-mac-faster-overlay2-filesystem](http://markshust.com/2017/03/02/making-docker-mac-faster-overlay2-filesystem)
 - [https://docs.docker.com/docker-for-mac/osxfs-caching/#examples](https://docs.docker.com/docker-for-mac/osxfs-caching/#examples)
