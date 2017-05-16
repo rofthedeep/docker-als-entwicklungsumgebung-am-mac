@@ -8,7 +8,7 @@ Mamp / Lamp Entwicklugnsumgebung war nicht mehr flexibel genug. Gerade bei der E
 
 ## Anforderungen
 
-- **Microservice Architectur** soll möglich sein 
+- **Microservice Architektur** soll möglich sein 
 - **einfaches "hochfahren"**: Entwicklungsumgebungen sollten schnell verfügbar sein
 - **vhosts** "dev.website.de" muss auch weiterhin funktionieren (Lizenzen etc.)
 - **SSL-Zertifikate** müssen funktionieren. Z.B. für Entwicklung und Tests von Payment Schnittstellen
@@ -68,135 +68,24 @@ Na ja ...
 
 Das Problem ist hier die Einbindung der Volumes. Die Syncronisation der Daten in die Container dauert zu lange. Hier wird aber gerade viel getan. Hoffnung: Bald wird es besser ...
 
+### dev = stage = live
 
-## Technische Grundlagen
+Ist möglich, aber zur Zeit noch nicht umgesetzt.
 
-### Proxy Einrichtung
+## Bewertung / erreichte Ziele
 
+- [x] Microservice Architektur
+- [x] einfaches "hochfahren"
+- [x] vhosts
+- [x] SSL-Zertifikate
+- [x] schnelle Einrichtung
+- [-] Performance
+- [ ] dev = stage = live
 
+## Links
 
-### Installation von Docker
+### Docker Performance in der Zukunft
 
-Installation von Docker for Mac: https://docs.docker.com/docker-for-mac/ und Freigabe der entsprechenden Entwicklungsverzeichnisse. 
-
-<img src="_images/file-sharing.png" width="400" height="auto" />
-
-### Virtual Hosts im Applikations-Container
-
-```
-klotzaufklotz:
-  image: rotd/docker-shopware-php56-ioncube-phpmyadmin-proxy:latest
-  container_name: klotzaufklotz
-  links:
-     - klotzaufklotzdb
-  environment:
-   - VIRTUAL_HOST=local.klotzaufklotz.de
-   # phpmyadmin password
-   - PHPMYADMIN_PW=shopware
-   # DB Values
-   - DB_USER=shopware
-   - DB_PASSWORD=shopware
-   - DB_DATABASE=shopware
-   - DB_PORT=3306
-   - DB_HOST=klotzaufklotzdb
-  volumes:
-   - ./:/var/www/html
-  expose:
-   - "80"
-```
-
-### SSL Zertifikate
-
-#### Docker-Compse Datei des Proxy Containers
-
-```
-version: '2'
-services:
-  nginx:
-    image: nginx
-    container_name: nginx
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - /etc/nginx/conf.d
-      - /Library/WebServer/Documents/_docker/_shared/certs:/etc/nginx/certs
-    network_mode: bridge
-    #environment:
-    #  - VIRTUAL_PORT=443
-    #expose:
-    # - "80"
-    # - "443"
-
-  dockergen:
-    image: jwilder/docker-gen
-    command: -notify-sighup nginx -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
-    volumes_from:
-      - nginx
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - /Library/WebServer/Documents/_docker/_shared/dockergen/nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
-    network_mode: bridge
-```
-
-#### Docker-Compse Datei des Applikations-Containers
-
-```
-base:
-  image: rotd/docker-base-php7-proxy:latest
-  container_name: base
-  environment:
-   - VIRTUAL_HOST=test.dev
-
-   # phpmyadmin password
-   - PHPMYADMIN_PW=base
-   - ROOT_DIR=_site/
-   # DB Values
-   - DB_USER=base
-   - DB_PASSWORD=base
-   - DB_DATABASE=base
-   - DB_PORT=3306
-   - DB_HOST=127.0.0.1
-  volumes:
-   - /Library/WebServer/Documents/_docker/_shared/certs:/etc/apache2/ssl
-   - ./:/var/www/html
-  expose:
-   - "80"
-```
-
-#### Apache Config des Applikations-Containers
-
-Dafür müsen dann auch in den Apache-Configs entsprechend die Zertifikate eingebunden werden:
-
-```
-<Virtualhost *:443>
-        ServerAdmin webmaster@localhost
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
-        SSLEngine On
-        SSLCertificateFile /etc/apache2/ssl/${VIRTUAL_HOST}.crt
-        SSLCertificateKeyFile /etc/apache2/ssl/${VIRTUAL_HOST}.key
-        DocumentRoot /var/www/html/${ROOT_DIR}
-        <Directory /var/www/html/${ROOT_DIR}>
-                AllowOverride All
-                Require all granted
-        </Directory>
-</Virtualhost>
-```
-
-### Ordnerstruktur
-
-#### Bestandteil 1: "Infrastruktur":
-
-<img src="_images/infrastructure-structure.png" width="600px"/>
-
-- _docker/docker-proxy-ssl/: starten des Proxys als Container
-- _docker/shared/dockergen/: nginx.tmpl file. Wird benötigt für den Proxy. Speicherung der aktuel generierten Einstellungen für die Weiterleitungen zu den Containern. Pfad muss entsprechend in der docker-compose Datei unter `docker/docker-proxy-ssl/docker-compose.yml` eingetragen werden.
-- _docker/_shared/certs/: Zertifkate. Können über `sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout dev.url.de.key -out dev.url.de.crt` erstellt werden
-
-#### Bestandteil 2: Im Projekt:
-
-<img src="_images/project-structure.png" width="400px"/>
-
-- docker-compose.yml file im Root
-- _data Verzeichnis. Hier werdem die Daten aus dem MySql Container gespeichert
+- [http://markshust.com/2017/03/02/making-docker-mac-faster-overlay2-filesystem](http://markshust.com/2017/03/02/making-docker-mac-faster-overlay2-filesystem)
+- [https://docs.docker.com/docker-for-mac/osxfs-caching/#examples](https://docs.docker.com/docker-for-mac/osxfs-caching/#examples)
+- [https://gist.github.com/yallop/d4af9dd1bb33ae61d48adf86692cdf9e](https://gist.github.com/yallop/d4af9dd1bb33ae61d48adf86692cdf9e)
