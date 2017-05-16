@@ -2,7 +2,7 @@
 
 ## Problem und Ziel
 
-Mamp / Lamp Entwicklungsumgebung war nicht mehr flexibel genug. Gerade bei der Entwicklung mit verschiedenen PHP Versionen kam es immer wieder zu Problemen.
+Lokale Entwicklungsumgebung war nicht mehr flexibel genug. Gerade bei der Entwicklung mit verschiedenen PHP Versionen kam es immer wieder zu Problemen.
 
 **Ziel:** flexible lokale Entwicklungsumgebung, die je nach Projekt dessen Anforderungen erfüllt.
 
@@ -75,6 +75,8 @@ Ist möglich, aber zur Zeit noch nicht umgesetzt.
 - [ ] dev = stage = live
 
 ## Links
+
+Diese Datei ist unter folgendem Link zu finden: [https://github.com/rofthedeep/docker-als-entwicklungsumgebung-am-mac](https://github.com/rofthedeep/docker-als-entwicklungsumgebung-am-mac)
 
 ### Docker Images
 
